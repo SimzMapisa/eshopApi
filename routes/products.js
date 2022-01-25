@@ -25,14 +25,23 @@ router.get('/:id', (req, res) => {
 // @access - Public
 
 router.post('/', (req, res) => {
-    const product = new Product({
-        name: req.body.name,
-        desc: req.body.description,
-        qty: req.body.qtyInStock
-    })
+    Product.findOne({ name: req.body.name })
+        .then((product) => {
+            if (product && product.qtyInStock !== 0) {
+                return res.status(400).json({ product: "product already exists" })
+            } else {
+                const newProduct = new Product({
+                    name: req.body.name,
+                    description: req.body.description,
+                    qtyInStock: req.body.qtyInStock,
+                });
 
-    product.save();
-    console.log(product);
+                newProduct.save()
+                    .then(product => { res.json(product) })
+                    .catch(error => { console.log(error.message) });
+            }
+        })
+
 })
 
 
