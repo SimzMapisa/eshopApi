@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const connectDb = require('./dbConfig');
 const app = express();
+const passport = require('passport');
 
 const products = require('./routes/products')
 const users = require('./routes/customers')
@@ -15,6 +16,10 @@ require('dotenv').config();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 app.use(morgan('tiny'));
+app.use(passport.initialize());
+
+// Passport Config
+require('./config/passport')(passport);
 
 connectDb();
 
