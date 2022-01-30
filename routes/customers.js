@@ -5,47 +5,73 @@ const gravatar = require('gravatar');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const { body, validationResult } = require('express-validator');
+
 
 // @route   POST /register
 // @desc    Create user accounts for customers
 // @access  Public
-router.post('/register', (req, res) => {
+router.post('/register',
+    body('email').isEmail().normalizeEmail(),
+    body('name').isLength({ min: 2 }),
+    body('surname').isLength({ min: 2 }),
+    body('password').isLength({ min: 5 })
+        .isLength({ min: 5 })
+        .withMessage('password must be at least 5 characters')
+        .matches('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$')
+        .withMessage('Minimum eight characters, at least one upper case English letter, one lower case English letter, one number and one special character'),
+    body('confirmPassword').custom((value, { req }) => {
+        if (value !== req.body.password) {
+            throw new Error('Password confirmation does not match password');
+        }
+        // Indicates the success of this synchronous custom validator
+        return true;
+    }),
 
-    // Check if the user already exist
-    Customer.findOne({ email: req.body.email })
-        .then((customer) => {
-            if (customer) {
-                return res.status(400).json({ email: "account already exist please login instead!" })
-            } else {
 
-                // If the user doesnt already exist get their gravatar and store in a variable
-                const avatar = gravatar.url(req.body.email, {
-                    s: '200', //size
-                    r: 'pg',  //raitng
-                    d: 'mm'   // default
-                })
+    (req, res) => {
 
-                // Use the customer model to create a new instance of the customer
-                const newCustomer = new Customer({
-                    name: req.body.name,
-                    surname: req.body.surname,
-                    email: req.body.email,
-                    avatar,
-                    password: req.body.password
-                });
+        // Check is there any errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-                bcrypt.genSalt(10, (err, salt) => {
-                    bcrypt.hash(newCustomer.password, salt, (err, hash) => {
-                        if (err) throw err;
-                        newCustomer.password = hash;
-                        newCustomer.save()
-                            .then(customer => res.json(customer))
-                            .catch(error => console.log(error))
+        // Check if the user already exist
+        Customer.findOne({ email: req.body.email })
+            .then((customer) => {
+                if (customer) {
+                    return res.status(400).json({ email: "account already exist please login instead!" })
+                } else {
+
+                    // If the user doesnt already exist get their gravatar and store in a variable
+                    const avatar = gravatar.url(req.body.email, {
+                        s: '200', //size
+                        r: 'pg',  //raitng
+                        d: 'mm'   // default
                     })
-                })
-            }
-        })
-})
+
+                    // Use the customer model to create a new instance of the customer
+                    const newCustomer = new Customer({
+                        name: req.body.name,
+                        surname: req.body.surname,
+                        email: req.body.email,
+                        avatar,
+                        password: req.body.password
+                    });
+
+                    bcrypt.genSalt(10, (err, salt) => {
+                        bcrypt.hash(newCustomer.password, salt, (err, hash) => {
+                            if (err) throw err;
+                            newCustomer.password = hash;
+                            newCustomer.save()
+                                .then(customer => res.json(customer))
+                                .catch(error => console.log(error))
+                        })
+                    })
+                }
+            })
+    })
 
 
 // @route   GET /users/login
@@ -94,4 +120,4 @@ router.get('/current', passport.authenticate('jwt', { session: false }), (req, r
     })
 })
 
-module.exports = router;    
+module.exports = router;
