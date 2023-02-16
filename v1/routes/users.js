@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const validator = require('../../validators');
-const UserController = require('../controllers/users');
+const UserController = require('../controllers/users.controller');
 
 // @route   POST /register
 // @desc    Create user accounts for Users
