@@ -6,7 +6,12 @@ const GetAllProducts = (req, res) => {
 		.catch((err) => console.log(err));
 };
 
-const GetProduct = (req, res) => {};
+const GetProduct = (req, res) => {
+	Product.findById(req.params.id).then((product) => {
+		console.log(product);
+		res.json(product);
+	});
+};
 
 const CreateProduct = (req, res) => {
 	Product.findOne({ name: req.body.name }).then((product) => {
@@ -15,6 +20,7 @@ const CreateProduct = (req, res) => {
 		} else {
 			const newProduct = new Product({
 				name: req.body.name,
+				slug: req.body.name,
 				description: req.body.description,
 				qtyInStock: req.body.qtyInStock,
 				richDescription: req.body.richDescription,
