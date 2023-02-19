@@ -12,12 +12,10 @@ router.get('/', ProductRoutes.GetAllProducts);
 // @desc - Get all products
 // @access - Public
 
-router.get('/:id', (req, res) => {
-	res.send({ msg: 'finally got the single product', name: 'myProd' });
-});
+router.get('/:id', ProductRoutes.GetProduct);
 
 // @route   POST api/products
-// @desc -  Post a single product
+// @desc -  Post a single produc
 // @access - Public
 
 router.post('/', ProductRoutes.CreateProduct);
