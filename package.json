@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "server.js",
 	"scripts": {
-		"server": "nodemon server.js"
+		"server": "nodemon server.js",
+		"test": "jest"
 	},
 	"author": "Simba Mapisa",
 	"license": "MIT",
