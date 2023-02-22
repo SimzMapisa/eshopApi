@@ -4,49 +4,64 @@ const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
 const { validationResult } = require('express-validator');
 
-const RegisterUser = (req, res) => {
-	// Check is there any errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
+const RegisterUser = (role) => [
+	(req, res, next) => {
+		// Check is there any errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
+		}
+		next();
+	},
 
 	// Check if the user already exist
-	User.findOne({ email: req.body.email }).then((user) => {
-		if (user) {
-			return res
-				.status(400)
-				.json({ email: 'account already exist please login instead!' });
-		} else {
-			// If the user doesnt already exist get their gravatar and store in a variable
-			const avatar = gravatar.url(req.body.email, {
-				s: '200', //size
-				r: 'pg', //raitng
-				d: 'mm', // default
+	(req, res, next) => {
+		User.findOne({ email: req.body.email })
+			.then((user) => {
+				if (user) {
+					return res
+						.status(400)
+						.json({ email: 'Account already exists. Please login instead.' });
+				}
+				next();
+			})
+			.catch((err) => {
+				console.error(err);
+				res.status(500).send('Server error');
 			});
+	},
 
-			// Use the User model to create a new instance of the User
-			const newUser = new User({
-				name: req.body.name,
-				surname: req.body.surname,
-				email: req.body.email,
-				avatar,
-				password: req.body.password,
-			});
+	(req, res, next) => {
+		const { name, surname, email, password } = req.body;
+		// If the user doesn't already exist get their gravatar and store in a variable
+		const avatar = gravatar.url(req.body.email, {
+			s: '200', //size
+			r: 'pg', //rating
+			d: 'mm', // default
+		});
 
-			bcrypt.genSalt(10, (err, salt) => {
-				bcrypt.hash(newUser.password, salt, (err, hash) => {
-					if (err) throw err;
-					newUser.password = hash;
-					newUser
-						.save()
-						.then((user) => res.json(user))
-						.catch((error) => console.log(error));
-				});
+		// Use the User model to create a new instance of the User
+		const newUser = new User({
+			role,
+			name,
+			surname,
+			email,
+			avatar,
+			password,
+		});
+
+		bcrypt.genSalt(10, (err, salt) => {
+			bcrypt.hash(newUser.password, salt, (err, hash) => {
+				if (err) throw err;
+				newUser.password = hash;
+				newUser
+					.save()
+					.then((user) => res.json(user))
+					.catch((error) => console.log(error));
 			});
-		}
-	});
-};
+		});
+	},
+];
 
 // Login into an existing account
 
@@ -59,6 +74,8 @@ const UserLogin = (req, res) => {
 		if (!user) {
 			return res.status(404).json({ email: 'User not found' });
 		}
+
+		const { name, role } = user;
 		// check password
 		bcrypt.compare(password, user.password).then((isMatch) => {
 			if (isMatch) {
@@ -71,9 +88,13 @@ const UserLogin = (req, res) => {
 				jwt.sign(
 					payload,
 					process.env.secretOrKey,
-					{ expiresIn: 43200 },
+					{ expiresIn: '1h' },
 					(err, token) => {
-						res.json({ success: true, token: 'Bearer ' + token });
+						res.json({
+							success: true,
+							token: 'Bearer ' + token,
+							role,
+						});
 					}
 				);
 			} else {
