@@ -24,6 +24,11 @@ const UserSchema = new Schema(
 		avatar: {
 			type: String,
 		},
+		role: {
+			type: String,
+			default: 'USER',
+			enum: ['USER', 'ADMIN', 'SUPER_ADMIN'],
+		},
 
 		date: {
 			type: Date,
