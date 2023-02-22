@@ -15,7 +15,7 @@ router.get('/', ProductRoutes.GetAllProducts);
 router.get('/:id', ProductRoutes.GetProduct);
 
 // @route   POST api/products
-// @desc -  Post a single produc
+// @desc -  Post a single product
 // @access - Public
 
 router.post('/', ProductRoutes.CreateProduct);

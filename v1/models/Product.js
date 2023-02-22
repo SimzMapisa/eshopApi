@@ -35,11 +35,13 @@ const ProductSchema = new Schema({
 		default: 0,
 		required: true,
 	},
-	category: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Category',
-		required: false,
-	},
+	category: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Category',
+			required: false,
+		},
+	],
 	qtyInStock: {
 		type: Number,
 		required: true,
