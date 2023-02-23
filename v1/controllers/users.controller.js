@@ -74,6 +74,8 @@ const UserLogin = (req, res) => {
 		if (!user) {
 			return res.status(404).json({ email: 'User not found' });
 		}
+
+		const { name, role } = user;
 		// check password
 		bcrypt.compare(password, user.password).then((isMatch) => {
 			if (isMatch) {
@@ -81,12 +83,7 @@ const UserLogin = (req, res) => {
 				 * If user credentials match with the ones in the database
 				 * then generate jwt token
 				 */
-				const payload = {
-					id: user.id,
-					email: user.email,
-					avatar: user.avatar,
-					role: user.role,
-				};
+				const payload = { id: user.id, email: user.email, avatar: user.avatar };
 				// sign token
 				jwt.sign(
 					payload,
@@ -96,6 +93,7 @@ const UserLogin = (req, res) => {
 						res.json({
 							success: true,
 							token: 'Bearer ' + token,
+							role,
 						});
 					}
 				);
