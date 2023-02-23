@@ -7,6 +7,7 @@ const {
 	RegisterUser,
 	getSingleUser,
 } = require('../controllers/users.controller');
+const { userAuth } = require('../middleware/auth');
 
 // @route   POST /register
 // @desc    Create user accounts for Users
@@ -21,7 +22,7 @@ router.post('/login', UserLogin);
 // @route   GET /api/v1/users
 // @desc    Returns  all users
 // @access  Private
-router.get('/', getAllUsers);
+router.get('/', userAuth(['SUPER_ADMIN', 'ADMIN']), getAllUsers);
 
 // @route   GET /api/v1/users/:id
 // @desc    Returns  the current user
