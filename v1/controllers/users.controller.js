@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
 const { validationResult } = require('express-validator');
 
+// Register a user based on their role utilize this function in user routes
 const RegisterUser = (role) => [
 	(req, res, next) => {
 		// Check is there any errors
