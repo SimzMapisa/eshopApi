@@ -14,6 +14,25 @@ const { userAuth } = require('../middleware/auth');
 // @access  Public
 router.post('/register', validator.validateUserCreation, RegisterUser('USER'));
 
+// @route   POST /register
+// @desc    Create Admin accounts
+// @access  Private
+router.post(
+	'/register/admin',
+	userAuth(['SUPER_ADMIN']),
+	validator.validateUserCreation,
+	RegisterUser('ADMIN')
+);
+
+// @route   POST /register
+// @desc    Create Super Admin accounts
+// @access  Private
+router.post(
+	'/register/super-admin',
+	validator.validateUserCreation,
+	RegisterUser('SUPER_ADMIN')
+);
+
 // @route   GET /users/login
 // @desc    Login User / Return JWT Token
 // @access  Public
