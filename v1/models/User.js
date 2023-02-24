@@ -34,6 +34,7 @@ const UserSchema = new Schema(
 			type: Date,
 			default: Date.now,
 		},
+		otpSecret: String,
 	},
 	{
 		toJSON: {
