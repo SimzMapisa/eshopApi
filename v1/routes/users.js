@@ -6,6 +6,9 @@ const {
 	UserLogin,
 	RegisterUser,
 	getSingleUser,
+	deleteUser,
+	editUser,
+	logout,
 } = require('../controllers/users.controller');
 const { userAuth } = require('../middleware/auth');
 
@@ -33,7 +36,7 @@ router.post(
 	RegisterUser('SUPER_ADMIN')
 );
 
-// @route   GET /users/login
+// @route   POST /users/login
 // @desc    Login User / Return JWT Token
 // @access  Public
 router.post('/login', UserLogin);
@@ -46,6 +49,18 @@ router.get('/', userAuth(['SUPER_ADMIN', 'ADMIN']), getAllUsers);
 // @route   GET /api/v1/users/:id
 // @desc    Returns  the current user
 // @access  Private
-router.get('/:id', getSingleUser);
+router.get('/:id', userAuth(['SUPER_ADMIN', 'ADMIN']), getSingleUser);
+
+// @route  DELETE /api/v1/users/:id
+// @desc    Returns  the current user
+// @access  Private
+router.delete('/:id', userAuth(['SUPER_ADMIN']), deleteUser);
+
+// @route  Patch /api/v1/users/:id
+// @desc    Returns returns current user with the new data
+// @access  Private
+router.patch('/:id', userAuth(['SUPER_ADMIN']), editUser);
+
+router.post('/logout', logout);
 
 module.exports = router;
