@@ -82,6 +82,7 @@ const UserLogin = (req, res) => {
 				 * If user credentials match with the ones in the database
 				 * then generate jwt token
 				 */
+
 				const payload = {
 					id: user.id,
 					email: user.email,
@@ -107,6 +108,59 @@ const UserLogin = (req, res) => {
 	});
 };
 
+// Logout function
+const jwtBlacklist = [];
+
+const logout = async (req, res, next) => {
+	const authHeader = req.headers.authorization;
+	const token = authHeader && authHeader.split(' ')[1];
+	const decoded = jwt.verify(token, process.env.secretOrKey);
+
+	if (!token) {
+		return res.status(401).json({ message: 'Unauthorized' });
+	}
+
+	if (jwtBlacklist.includes(token)) {
+		return res.status(401).json({ message: 'Token revoked' });
+	}
+
+	jwt.verify(token, process.env.secretOrKey, (err, user) => {
+		if (err) {
+			return res.status(401).json({ message: 'Invalid token' });
+		}
+
+		req.user = user;
+		next();
+	});
+
+	jwtBlacklist.push(token);
+
+	const payload = {
+		id: decoded.id,
+		email: decoded.email,
+		avatar: decoded.avatar,
+		role: decoded.role,
+	};
+
+	console.log(payload);
+
+	jwt.sign(
+		payload,
+		process.env.secretOrKey,
+		{ expiresIn: '2s' }, // Set the expiration time to 2 seconds
+		(err, token) => {
+			return res.json({
+				success: true,
+				token: 'Bearer ' + token,
+			});
+		}
+	);
+
+	return res
+		.status(200)
+		.json({ message: 'Logged out successfully', jwtBlacklist });
+};
+
 // Get a list of all the available users
 const getAllUsers = (req, res) => {
 	User.find()
@@ -125,9 +179,44 @@ const getSingleUser = (req, res) => {
 	});
 };
 
+const deleteUser = (req, res) => {
+	User.findByIdAndDelete(req.params.id)
+		.exec()
+		.then((doc) => {
+			if (!doc) {
+				return res.status(404).json({ message: 'User not found' });
+			}
+			return res.json({ message: `${doc.name} deleted`, user: doc });
+		});
+};
+
+const editUser = async (req, res) => {
+	try {
+		await User.findById(req.params.id).then((user) => {
+			if (!user) {
+				res.status(404).json({ message: 'User not found' });
+			}
+
+			user.name = req.body.name || user.name;
+			user.surname = req.body.surname || user.surname;
+			user.email = req.body.email || user.email;
+			user.role = req.body.role || user.role;
+
+			user.save().then((user) => {
+				res.json({ user, message: 'User details updated successfully' });
+			});
+		});
+	} catch (error) {
+		console.log(error);
+	}
+};
+
 module.exports = {
 	getAllUsers,
 	UserLogin,
 	RegisterUser,
 	getSingleUser,
+	deleteUser,
+	editUser,
+	logout,
 };
