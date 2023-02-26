@@ -8,6 +8,8 @@ const GetAllProducts = (req, res) => {
 
 const GetProduct = (req, res) => {
 	Product.findById(req.params.id).then((product) => {
+		if (!product)
+			return res.status(404).json({ message: 'Product can not be found!' });
 		console.log(product);
 		res.json(product);
 	});
