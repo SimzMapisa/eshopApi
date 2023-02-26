@@ -69,9 +69,21 @@ const EditProduct = async (req, res) => {
 	}
 };
 
+const DeleteProduct = (req, res) => {
+	Product.findByIdAndDelete(req.params.id)
+		.exec()
+		.then((doc) => {
+			if (!doc) {
+				return res.status(404).json({ message: 'Product does not exist' });
+			}
+			return res.json({ message: `Product deleted` });
+		});
+};
+
 module.exports = {
 	CreateProduct,
 	GetAllProducts,
 	GetProduct,
 	EditProduct,
+	DeleteProduct,
 };

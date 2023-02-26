@@ -5,6 +5,7 @@ const {
 	GetProduct,
 	CreateProduct,
 	EditProduct,
+	DeleteProduct,
 } = require('../controllers/products.controller');
 const { userAuth } = require('../middleware/auth');
 
@@ -30,5 +31,10 @@ router.post('/', userAuth(['SUPER_ADMIN', 'ADMIN']), CreateProduct);
 // @desc -  Post a single product
 // @access - Private (only ADMINS and SUPER_ADMINS can access)
 router.patch('/:id', userAuth(['SUPER_ADMIN', 'ADMIN']), EditProduct);
+
+// @route   DELETE api/products
+// @desc -  Delete a single product
+// @access - Private (only ADMINS and SUPER_ADMINS can access)
+router.delete('/:id', userAuth(['SUPER_ADMIN', 'ADMIN']), DeleteProduct);
 
 module.exports = router;
